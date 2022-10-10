@@ -9,5 +9,5 @@ RUN apk add chromium chromium-chromedriver && \
     pip install selenium && \
     pip install requests
 
-COPY public.py /public.py
-CMD ["python", "/public.py"]
+COPY script.py /script.py
+CMD ["python", "/script.py"]

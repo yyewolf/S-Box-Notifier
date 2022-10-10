@@ -50,7 +50,7 @@ class KeyScanner:
                 "text": "Key Notifier - Yewolf"
             }
         }
-        requests.post(webhook_url, json={"content":"@everyone","embeds": [embed]})
+        requests.post(self.webhook_url, json={"content":"@everyone","embeds": [embed]})
 
     def analyze(self) -> Scan:
         scan = Scan()
