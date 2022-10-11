@@ -25,6 +25,7 @@ class KeyScanner:
         self.log_url = log_url
         self.poll_rate = poll_rate
         self.validscans = []
+        self.scans = 0
         self.chrome_options = Options()
         if headless:
             self.chrome_options.add_argument('--headless')
@@ -68,7 +69,7 @@ class KeyScanner:
         log = {
             "title": "Scanned",
             "color": 0x00ff00,
-            "description": f"Time: {time.strftime('%H:%M:%S')}\nKeys: {scan.keys}\nPeople: {scan.people}\nButton Enabled: {scan.enabled}",
+            "description": f"Time: {time.strftime('%H:%M:%S')}\Total scans: {self.scans}\nKeys: {scan.keys}\nPeople: {scan.people}\nButton Enabled: {scan.enabled}",
             "footer": {
                 "text": "Key Notifier - Yewolf"
             }
@@ -84,6 +85,7 @@ class KeyScanner:
         if scan.valid() and time.time() - self.last_status().time > 180:
             self.notify(scan.keys)
             self.add_status(scan)
+        self.scans += 1
     
     def start(self):
         while True:
