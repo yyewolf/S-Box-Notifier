@@ -16,7 +16,7 @@ class Scan:
     people: int = 0
 
     def valid(self) -> bool:
-        return self.enabled
+        return self.enabled or self.keys > 0
 
 class KeyScanner:
     def __init__(self, website_url:str, discord_webhook_url:str, log_url:str, poll_rate:int, headless:bool=False):
@@ -59,8 +59,10 @@ class KeyScanner:
         btns = self.driver.find_elements(By.CLASS_NAME, "button")
         scan.tags = len(elems)
         try:
-            if btns[0].text == "enter":
-                scan.enabled = btns[0].is_enabled()
+            for b in btns:
+                if b.text.lower() == "enter":
+                    scan.enabled = True
+                    break
             scan.keys = elems[0].text.split("\n")[-1]
             scan.people = elems[-1].text.split("\n")[-1]
         except:
