@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/yyewolf/S-Box-Notifier/logo.png" align="middle"></img></p>
+<p align="center"><img src="logo.png" align="middle"></img></p>
 
 # What is?
 S&Box Notifier is a Discord bot programmed to send an alert when it detects keys available in the 'Developer Preview Torture Service' in order to redeem an access key to the new Facepunch game, which is currently in a closed BETA. Good luck to you all!
