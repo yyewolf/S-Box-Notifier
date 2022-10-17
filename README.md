@@ -7,4 +7,4 @@ S&Box Notifier is a Discord bot programmed to send an alert when it detects keys
 Feel free to send your proposals and the community will take care of accepting them, together we can improve the functioning of this tool
 
 # Discord Server
-Join our official Discord server by <a title="Discord server" href="https://discord.gg/VdchsDAx77">clicking here</a>
+Join our official Discord server by <a title="Discord server" href="https://discord.gg/jyy8HMdbEA">clicking here</a>
