@@ -9,10 +9,10 @@ import os
 
 @dataclass
 class Scan:
-    keys: int = 0
-    enabled: bool = False
     time: int = 0
+    keys: int = 0
     tags: int = 0
+    enabled: bool = False
     people: int = 0
 
     def valid(self) -> bool:
@@ -71,7 +71,7 @@ class KeyScanner:
         log = {
             "title": "Scanned",
             "color": 0x00ff00,
-            "description": f"Time: {time.strftime('%H:%M:%S')}\nTotal scans: {self.scans}\nKeys: {scan.keys}\nPeople: {scan.people}\nButton Enabled: {scan.enabled}",
+            "description": f"Keys: {scan.keys}\nButton Enabled: {scan.enabled}\nTime: {time.strftime('%H:%M:%S')}\nTotal scans: {self.scans}\nPeople: {scan.people}",
             "footer": {
                 "text": "Key Notifier - Yewolf"
             }
