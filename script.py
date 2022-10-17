@@ -61,9 +61,9 @@ class KeyScanner:
         try:
             for b in btns:
                 if b.text.lower() == "enter":
-                    scan.enabled = True
+                    scan.enabled = b.is_enabled()
                     break
-            scan.keys = elems[0].text.split("\n")[-1]
+            scan.keys = int(elems[0].text.split("\n")[-1])
             scan.people = elems[-1].text.split("\n")[-1]
         except:
             pass
