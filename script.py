@@ -9,10 +9,10 @@ import os
 
 @dataclass
 class Scan:
-    time: int = 0
     keys: int = 0
-    tags: int = 0
     enabled: bool = False
+    time: int = 0
+    tags: int = 0
     people: int = 0
 
     def valid(self) -> bool:
