@@ -9,14 +9,15 @@ import os
 
 @dataclass
 class Scan:
-    time: int = 0
     keys: int = 0
-    tags: int = 0
-    enabled: bool = False
-    people: int = 0
+    timer: int = 0
+    people_in: int = 0
+    people_watching: int = 0
+    
 
     def valid(self) -> bool:
-        return self.enabled or self.keys > 0
+        # we want it to be valid from 12 to 8 minutes, then from 6 to 2 minutes for another ping
+        return (self.timer >= 720 and self.timer <= 480) or (self.timer >= 360 and self.timer <= 120)
 
 class KeyScanner:
     def __init__(self, website_url:str, discord_webhook_url:str, log_url:str, poll_rate:int, headless:bool=False):
@@ -42,7 +43,7 @@ class KeyScanner:
         return Scan()
     
     def notify(self, keys):
-        message = f"Key drop at : {time.strftime('%H:%M:%S')}, there are {keys} keys available.\nClick [here]({self.website_url}) to go to the website."
+        message = f"Raffle will soon begin, there are {keys} keys available.\nClick [here]({self.website_url}) to go to the website."
         embed = {
             "title": "Key Drop",
             "description": message,
@@ -53,25 +54,36 @@ class KeyScanner:
         }
         requests.post(self.webhook_url, json={"content":"@everyone","embeds": [embed]})
 
+    def parse(self, time:str):
+        # exemple : 5h 30m 0s => 19800s
+        time = time.split(" ")
+        hours = int(time[0].replace("h", ""))
+        minutes = int(time[1].replace("m", ""))
+        seconds = int(time[2].replace("s", ""))
+        return hours*3600 + minutes*60 + seconds
+    
+    def format(self, time:int):
+        hours = time // 3600
+        minutes = (time % 3600) // 60
+        seconds = time % 60
+        return f"{hours}h {minutes}m {seconds}s"
+
     def analyze(self) -> Scan:
         scan = Scan()
         elems = self.driver.find_elements(By.CLASS_NAME, "tag")
-        btns = self.driver.find_elements(By.CLASS_NAME, "button")
-        scan.tags = len(elems)
         try:
-            for b in btns:
-                if b.text.lower() == "enter":
-                    scan.enabled = b.is_enabled()
-                    break
             scan.keys = int(elems[0].text.split("\n")[-1])
-            scan.people = elems[-1].text.split("\n")[-1]
+            # parse the time %H %M %S to seconds
+            scan.timer = self.parse(elems[1].text.split("\n")[-1])
+            scan.people_in = elems[2].text.split("\n")[-1]
+            scan.people_watching = elems[3].text.split("\n")[-1]
         except:
             pass
 
         log = {
             "title": "Scanned",
             "color": 0x00ff00,
-            "description": f"Keys: {scan.keys}\nButton Enabled: {scan.enabled}\nTime: {time.strftime('%H:%M:%S')}\nTotal scans: {self.scans}\nPeople: {scan.people}",
+            "description": f"Keys: {scan.keys}\Timer: {self.format(scan.timer)}\nPeople In: {scan.people_in}\nPeople Watching: {scan.people_watching}\nTotal scans: {self.scans}",
             "footer": {
                 "text": "Key Notifier - Yewolf"
             }
@@ -95,9 +107,9 @@ class KeyScanner:
             time.sleep(self.poll_rate-1)
 
 
-webhook_url = os.environ.get("WEBHOOK_URL")
-log_url = os.environ.get("WEBHOOK_LOG_URL")
-website_url = os.environ.get("WEBSITE_URL")
+webhook_url = os.environ.get("WEBHOOK_URL", "")
+log_url = os.environ.get("WEBHOOK_LOG_URL", "")
+website_url = os.environ.get("WEBSITE_URL", "https://asset.party/get/developer/preview")
 poll_rate = int(os.environ.get("POLL_RATE", 60))
 
 scanner = KeyScanner(website_url, webhook_url, log_url, poll_rate, True)
