@@ -83,7 +83,7 @@ class KeyScanner:
         log = {
             "title": "Scanned",
             "color": 0x00ff00,
-            "description": f"Keys: {scan.keys}\Timer: {self.format(scan.timer)}\nPeople In: {scan.people_in}\nPeople Watching: {scan.people_watching}\nTotal scans: {self.scans}",
+            "description": f"Keys: {scan.keys}\nTimer: {self.format(scan.timer)}\nPeople In: {scan.people_in}\nPeople Watching: {scan.people_watching}\nTotal scans: {self.scans}",
             "footer": {
                 "text": "Key Notifier - Yewolf"
             }
