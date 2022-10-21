@@ -13,34 +13,29 @@ class Scan:
     timer: int = 0
     people_in: int = 0
     people_watching: int = 0
+    winner: str = ""
     
 
     def valid(self) -> bool:
-        # we want it to be valid from 12 to 8 minutes, then from 6 to 2 minutes for another ping
-        return (self.timer >= 720 and self.timer <= 480) or (self.timer >= 360 and self.timer <= 120)
+        # we want it to be valid from 9 to 10 minutes, then from 4 to 5 minutes for another ping
+        return (self.timer >= 9*60 and self.timer <= 10*60) or (self.timer >= 4*60 and self.timer <= 5*60)
 
 class KeyScanner:
-    def __init__(self, website_url:str, discord_webhook_url:str, log_url:str, poll_rate:int, headless:bool=False):
+    def __init__(self, website_url:str, discord_webhook_url:str, log_url:str, headless:bool=False):
         self.webhook_url = discord_webhook_url
         self.website_url = website_url
         self.log_url = log_url
-        self.poll_rate = poll_rate
-        self.validscans = []
         self.scans = 0
+        self.last_ping = 0
+        self.checker = [0,0]
         self.chrome_options = Options()
         if headless:
             self.chrome_options.add_argument('--headless')
             self.chrome_options.add_argument('--no-sandbox')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        self.chrome_options.add_experimental_option("prefs", prefs)
         self.driver = webdriver.Chrome(options=self.chrome_options)
-
-    def add_status(self, scan:Scan):
-        self.validscans.append(scan)
-
-    def last_status(self) -> Scan:
-        if len(self.validscans) > 0:
-            return self.validscans[-1]
-        return Scan()
     
     def notify(self, keys):
         message = f"Raffle will soon begin, there are {keys} keys available.\nClick [here]({self.website_url}) to go to the website."
@@ -52,7 +47,10 @@ class KeyScanner:
                 "text": "Key Notifier - Yewolf"
             }
         }
-        requests.post(self.webhook_url, json={"content":"@everyone","embeds": [embed]})
+        try:
+            requests.post(self.webhook_url, json={"content":"@everyone","embeds": [embed]})
+        except:
+            pass
 
     def parse(self, time:str):
         # exemple : 5h 30m 0s => 19800s
@@ -75,42 +73,51 @@ class KeyScanner:
             scan.keys = int(elems[0].text.split("\n")[-1])
             # parse the time %H %M %S to seconds
             scan.timer = self.parse(elems[1].text.split("\n")[-1])
+            ## rotates checker
+            self.checker[1] = self.checker[0]
+            self.checker[0] = scan.timer
             scan.people_in = elems[2].text.split("\n")[-1]
             scan.people_watching = elems[3].text.split("\n")[-1]
+            scan.winner = elems[4].text.split("\n")[-1]
         except:
             pass
 
-        log = {
-            "title": "Scanned",
-            "color": 0x00ff00,
-            "description": f"Keys: {scan.keys}\nTimer: {self.format(scan.timer)}\nPeople In: {scan.people_in}\nPeople Watching: {scan.people_watching}\nTotal scans: {self.scans}",
-            "footer": {
-                "text": "Key Notifier - Yewolf"
+        if scan.winner != "":
+            log = {
+                "title": "Winner",
+                "color": 0x00ff00,
+                "description": f"There has been a winner, {scan.winner} won a key !",
+                "footer": {
+                    "text": "Key Notifier - Yewolf"
+                }
             }
-        }
-        requests.post(self.log_url, json={"embeds": [log]})
+            try:
+                requests.post(self.log_url, json={"embeds": [log]})
+            except:
+                pass
         return scan
     
     def scan(self):
-        self.driver.get(self.website_url)
-        time.sleep(1)
+        if self.checker[0] == self.checker[1]:
+            self.driver.get(self.website_url)
+            time.sleep(1)
         scan = self.analyze()
         # checks the button "enter"
-        if scan.valid() and time.time() - self.last_status().time > 180:
+        if scan.valid() and time.time() - self.last_ping > 180:
+            print("valid")
             self.notify(scan.keys)
-            self.add_status(scan)
+            self.last_ping = time.time()
         self.scans += 1
     
     def start(self):
         while True:
             self.scan()
-            time.sleep(self.poll_rate-1)
+            time.sleep(1.5)
 
 
 webhook_url = os.environ.get("WEBHOOK_URL", "")
 log_url = os.environ.get("WEBHOOK_LOG_URL", "")
 website_url = os.environ.get("WEBSITE_URL", "https://asset.party/get/developer/preview")
-poll_rate = int(os.environ.get("POLL_RATE", 60))
 
-scanner = KeyScanner(website_url, webhook_url, log_url, poll_rate, True)
+scanner = KeyScanner(website_url, webhook_url, log_url, False)
 scanner.start()
