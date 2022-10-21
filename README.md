@@ -17,8 +17,7 @@ To run your own instance of S&Box Notifier you need to have docker and git insta
     ```
             - WEBHOOK_URL=insert webhook url for the notifications channel
             - WEBSITE_URL=https://asset.party/get/developer/preview
-            - WEBHOOK_LOG_URL=insert webhook url for the scans channel
-            - POLL_RATE=amount of seconds per scan.(60 recommended)
+            - WEBHOOK_LOG_URL=insert webhook url for the winner's channel
     ```
 3. Compose a docker container with this command while inside the repository folder:
     ```
