@@ -1,4 +1,3 @@
-from asyncore import poll
 from dataclasses import dataclass
 from selenium import webdriver
 from selenium.webdriver.common.by import By
