@@ -118,5 +118,5 @@ webhook_url = os.environ.get("WEBHOOK_URL", "")
 log_url = os.environ.get("WEBHOOK_LOG_URL", "")
 website_url = os.environ.get("WEBSITE_URL", "https://asset.party/get/developer/preview")
 
-scanner = KeyScanner(website_url, webhook_url, log_url, False)
+scanner = KeyScanner(website_url, webhook_url, log_url, True)
 scanner.start()
