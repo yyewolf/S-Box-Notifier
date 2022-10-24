@@ -24,8 +24,9 @@ class KeyScanner:
         self.webhook_url = discord_webhook_url
         self.website_url = website_url
         self.log_url = log_url
-        self.scans = 0
         self.last_ping = 0
+        self.poll_rate = 1.5
+        self.winners = []
         self.checker = [0,0]
         self.chrome_options = Options()
         if headless:
@@ -36,8 +37,8 @@ class KeyScanner:
         self.chrome_options.add_experimental_option("prefs", prefs)
         self.driver = webdriver.Chrome(options=self.chrome_options)
     
-    def notify(self, keys):
-        message = f"Raffle will soon begin, there are {keys} keys available.\nClick [here]({self.website_url}) to go to the website."
+    def notify(self, scan:Scan):
+        message = f"Raffle will begin in {self.format(scan.timer)} there are {scan.keys} keys available.\nClick [here]({self.website_url}) to go to the website."
         embed = {
             "title": "Key Drop",
             "description": message,
@@ -65,23 +66,35 @@ class KeyScanner:
         seconds = time % 60
         return f"{hours}h {minutes}m {seconds}s"
 
+    def fast_near_loot(self, scan:Scan):
+        if self.timer > 2:
+            self.poll_rate = 0.5
+        else:
+            self.poll_rate = 1.5
+
     def analyze(self) -> Scan:
         scan = Scan()
         elems = self.driver.find_elements(By.CLASS_NAME, "tag")
-        try:
-            scan.keys = int(elems[0].text.split("\n")[-1])
+
+        if len(elems) > 3:
+            # parse keys available
+            scan.keys = safe_cast(elems[0].text.split("\n")[-1], int, 0)
             # parse the time %H %M %S to seconds
             scan.timer = self.parse(elems[1].text.split("\n")[-1])
             ## rotates checker
             self.checker[1] = self.checker[0]
             self.checker[0] = scan.timer
+            # parse people in
             scan.people_in = elems[2].text.split("\n")[-1]
+            # parse people watching
             scan.people_watching = elems[3].text.split("\n")[-1]
+        if len(elems) > 4:
+            # parse winners
             scan.winner = elems[4].text.split("\n")[-1]
-        except:
-            pass
 
-        if scan.winner != "":
+        if scan.winner not in self.winners and scan.winner not in ["", "..."]:
+            print("Winner found:", scan.winner)
+            self.winners.append(scan.winner)
             log = {
                 "title": "Winner",
                 "color": 0x00ff00,
@@ -97,22 +110,29 @@ class KeyScanner:
         return scan
     
     def scan(self):
-        if self.checker[0] == self.checker[1]:
+        if (self.checker[0] == self.checker[1] and self.poll_rate == 1.5) or 'refresh' in self.driver.page_source:
+            print("Refreshing...")
             self.driver.get(self.website_url)
             time.sleep(1)
+            
         scan = self.analyze()
         # checks the button "enter"
+        print(scan)
+        
         if scan.valid() and time.time() - self.last_ping > 180:
-            print("valid")
             self.notify(scan.keys)
             self.last_ping = time.time()
-        self.scans += 1
     
     def start(self):
         while True:
             self.scan()
-            time.sleep(1.5)
+            time.sleep(self.poll_rate)
 
+def safe_cast(val, to_type, default=None):
+    try:
+        return to_type(val)
+    except (ValueError, TypeError):
+        return default
 
 webhook_url = os.environ.get("WEBHOOK_URL", "")
 log_url = os.environ.get("WEBHOOK_LOG_URL", "")

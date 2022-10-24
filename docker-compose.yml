@@ -6,6 +6,5 @@ services:
     network_mode: "host"
     environment:
       - WEBHOOK_URL=
-      - WEBSITE_URL=
+      - WEBSITE_URL=https://asset.party/get/developer/preview
       - WEBHOOK_LOG_URL=
-      - POLL_RATE=
