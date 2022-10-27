@@ -120,7 +120,7 @@ class KeyScanner:
         print(scan)
         
         if scan.valid() and time.time() - self.last_ping > 180:
-            self.notify(scan.keys)
+            self.notify(scan)
             self.last_ping = time.time()
     
     def start(self):
