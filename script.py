@@ -80,7 +80,11 @@ class KeyScanner:
             # parse keys available
             scan.keys = safe_cast(elems[0].text.split("\n")[-1], int, 0)
             # parse the time %H %M %S to seconds
-            scan.timer = self.parse(elems[1].text.split("\n")[-1])
+            try:
+                scan.timer = self.parse(elems[1].text.split("\n")[-1])
+            except:
+                scan.timer = 0
+            # parse people in
             ## rotates checker
             self.checker[1] = self.checker[0]
             self.checker[0] = scan.timer
