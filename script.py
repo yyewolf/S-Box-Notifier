@@ -114,12 +114,14 @@ class KeyScanner:
         return scan
     
     def scan(self):
-        if (self.checker[0] == self.checker[1] and self.poll_rate == 1.5) or 'refresh' in self.driver.page_source:
+        scan = self.analyze()
+
+        if (self.checker[0] == self.checker[1] and (self.poll_rate == 1.5 or scan.keys == 0)) or 'refresh' in self.driver.page_source:
             print("Refreshing...")
             self.driver.get(self.website_url)
             time.sleep(1)
-            
-        scan = self.analyze()
+            scan = self.analyze()
+
         # checks the button "enter"
         print(scan)
         
