@@ -14,7 +14,6 @@ class Scan:
     people_watching: int = 0
     winner: str = ""
     
-
     def valid(self) -> bool:
         # we want it to be valid from 9 to 10 minutes, then from 4 to 5 minutes for another ping
         return (self.timer >= 9*60 and self.timer <= 10*60) or (self.timer >= 4*60 and self.timer <= 5*60)
@@ -25,7 +24,7 @@ class KeyScanner:
         self.website_url = website_url
         self.log_url = log_url
         self.last_ping = 0
-        self.poll_rate = 1.5
+        self.poll_rate = 3
         self.winners = []
         self.checker = [0,0]
         #self.chrome_options = Options()
@@ -72,7 +71,7 @@ class KeyScanner:
         if self.timer > 2:
             self.poll_rate = 0.5
         else:
-            self.poll_rate = 1.5
+            self.poll_rate = 3
 
     def analyze(self) -> Scan:
         scan = Scan()
@@ -118,7 +117,7 @@ class KeyScanner:
     def scan(self):
         scan = self.analyze()
 
-        if (self.checker[0] == self.checker[1] and (self.poll_rate == 1.5 or scan.keys == 0)) or 'refresh' in self.driver.page_source:
+        if (self.checker[0] == self.checker[1] and (self.poll_rate == 3 or scan.keys == 0)) or 'refresh' in self.driver.page_source:
             print("Refreshing...")
             self.driver.get(self.website_url)
             time.sleep(1)
