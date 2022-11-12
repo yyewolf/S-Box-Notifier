@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+import undetected_chromedriver as Uc
+from pyvirtualdisplay import Display
 import time
 import requests
 import os
@@ -28,14 +28,16 @@ class KeyScanner:
         self.poll_rate = 1.5
         self.winners = []
         self.checker = [0,0]
-        self.chrome_options = Options()
-        if headless:
-            self.chrome_options.add_argument('--headless')
-            self.chrome_options.add_argument('--no-sandbox')
-        self.chrome_options.add_argument('--disable-dev-shm-usage')
-        prefs = {"profile.managed_default_content_settings.images": 2}
-        self.chrome_options.add_experimental_option("prefs", prefs)
-        self.driver = webdriver.Chrome(options=self.chrome_options)
+        #self.chrome_options = Options()
+        #if headless:
+            #self.chrome_options.add_argument('--headless')
+            #self.chrome_options.add_argument('--no-sandbox')
+        #self.chrome_options.add_argument('--disable-dev-shm-usage')
+        #prefs = {"profile.managed_default_content_settings.images": 2}
+        #self.chrome_options.add_experimental_option("prefs", prefs)
+        self.display = Display(visible=False, size=(800, 600))
+        self.display.start()
+        self.driver = Uc.Chrome(driver_executable_path='/usr/bin/chromedriver')
     
     def notify(self, scan:Scan):
         message = f"Raffle will begin in {self.format(scan.timer)} there are {scan.keys} keys available.\nClick [here]({self.website_url}) to go to the website."
